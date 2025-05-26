@@ -56,6 +56,13 @@ const BacklinkTypeSelector: React.FC<BacklinkTypeSelectorProps> = ({
     onSelectionChange(newSelection);
   };
 
+  const handleCheckboxChange = (typeId: string, checked: boolean) => {
+    const newSelection = checked
+      ? [...selectedTypes, typeId]
+      : selectedTypes.filter(t => t !== typeId);
+    onSelectionChange(newSelection);
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="font-semibold">Select Backlink Types</h3>
@@ -77,7 +84,11 @@ const BacklinkTypeSelector: React.FC<BacklinkTypeSelectorProps> = ({
               <div className="flex items-start space-x-3">
                 <Checkbox
                   checked={isSelected}
-                  onChange={() => handleTypeToggle(type.id)}
+                  onCheckedChange={(checked) => {
+                    // Prevent event bubbling to avoid double triggering
+                    handleCheckboxChange(type.id, checked === true);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
                   className="mt-1"
                 />
                 <Icon className="w-5 h-5 mt-1 text-blue-600" />
