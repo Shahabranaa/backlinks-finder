@@ -14,13 +14,69 @@ import BacklinkTypeSelector from '@/components/BacklinkTypeSelector';
 import QualityGuidelines from '@/components/QualityGuidelines';
 import ProgressTracker from '@/components/ProgressTracker';
 import DashboardStats from '@/components/DashboardStats';
+import BacklinkResults, { CreatedBacklink } from '@/components/BacklinkResults';
 
 const Index = () => {
   const [domain, setDomain] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
+  const [createdBacklinks, setCreatedBacklinks] = useState<CreatedBacklink[]>([]);
   const { toast } = useToast();
+
+  // Mock backlink platforms for each type
+  const backlinkPlatforms = {
+    profile: [
+      { name: 'GitHub', url: 'https://github.com', description: 'Developer profile with project showcase' },
+      { name: 'LinkedIn', url: 'https://linkedin.com', description: 'Professional network profile' },
+      { name: 'About.me', url: 'https://about.me', description: 'Personal branding page' },
+      { name: 'AngelList', url: 'https://angel.co', description: 'Startup ecosystem profile' },
+    ],
+    forum: [
+      { name: 'Stack Overflow', url: 'https://stackoverflow.com', description: 'Technical discussion and solution' },
+      { name: 'Reddit r/webdev', url: 'https://reddit.com/r/webdev', description: 'Community discussion post' },
+      { name: 'Hacker News', url: 'https://news.ycombinator.com', description: 'Tech community engagement' },
+      { name: 'Dev Community', url: 'https://dev.to', description: 'Developer forum participation' },
+    ],
+    comment: [
+      { name: 'TechCrunch', url: 'https://techcrunch.com', description: 'Insightful comment on tech article' },
+      { name: 'Smashing Magazine', url: 'https://smashingmagazine.com', description: 'Expert comment on design article' },
+      { name: 'CSS-Tricks', url: 'https://css-tricks.com', description: 'Technical insight on development post' },
+      { name: 'A List Apart', url: 'https://alistapart.com', description: 'Professional comment on industry article' },
+    ],
+    directory: [
+      { name: 'Clutch', url: 'https://clutch.co', description: 'Business directory listing' },
+      { name: 'Crunchbase', url: 'https://crunchbase.com', description: 'Company database entry' },
+      { name: 'Product Hunt', url: 'https://producthunt.com', description: 'Product showcase listing' },
+      { name: 'Startupliit', url: 'https://startupliit.com', description: 'Startup directory submission' },
+    ],
+  };
+
+  const simulateBacklinkCreation = (type: string, platforms: any[]) => {
+    const platform = platforms[Math.floor(Math.random() * platforms.length)];
+    const backlink: CreatedBacklink = {
+      id: `${type}-${Date.now()}-${Math.random()}`,
+      platform: platform.name,
+      url: platform.url,
+      type,
+      status: 'pending',
+      createdAt: new Date(),
+      description: platform.description,
+    };
+
+    setCreatedBacklinks(prev => [...prev, backlink]);
+
+    // Simulate completion after a delay
+    setTimeout(() => {
+      setCreatedBacklinks(prev => 
+        prev.map(bl => 
+          bl.id === backlink.id 
+            ? { ...bl, status: Math.random() > 0.1 ? 'success' : 'failed' }
+            : bl
+        )
+      );
+    }, 2000 + Math.random() * 3000);
+  };
 
   const handleDomainSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,24 +92,42 @@ const Index = () => {
 
     setIsProcessing(true);
     setProgress(0);
+    setCreatedBacklinks([]);
 
     // Simulate the backlink creation process
-    const steps = selectedTypes.length * 10;
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        const newProgress = prev + (100 / steps);
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          setIsProcessing(false);
-          toast({
-            title: "Backlink Creation Complete",
-            description: `Successfully created high-quality backlinks for ${domain}`,
-          });
-          return 100;
-        }
-        return newProgress;
-      });
-    }, 200);
+    const totalBacklinks = selectedTypes.length * 3; // 3 backlinks per type
+    let currentBacklink = 0;
+
+    const createBacklinksForType = (typeIndex: number) => {
+      if (typeIndex >= selectedTypes.length) {
+        setIsProcessing(false);
+        setProgress(100);
+        toast({
+          title: "Backlink Creation Complete",
+          description: `Successfully created ${createdBacklinks.length} high-quality backlinks for ${domain}`,
+        });
+        return;
+      }
+
+      const currentType = selectedTypes[typeIndex];
+      const platforms = backlinkPlatforms[currentType as keyof typeof backlinkPlatforms];
+      
+      // Create 3 backlinks for this type
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => {
+          simulateBacklinkCreation(currentType, platforms);
+          currentBacklink++;
+          setProgress((currentBacklink / totalBacklinks) * 100);
+          
+          // Move to next type after all backlinks for current type are initiated
+          if (i === 2) {
+            setTimeout(() => createBacklinksForType(typeIndex + 1), 1000);
+          }
+        }, i * 1500);
+      }
+    };
+
+    createBacklinksForType(0);
   };
 
   return (
@@ -142,6 +216,12 @@ const Index = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Backlink Results */}
+            <BacklinkResults 
+              backlinks={createdBacklinks}
+              isProcessing={isProcessing}
+            />
 
             {/* Quality Assurance Banner */}
             <Card className="border-green-200 bg-green-50">
