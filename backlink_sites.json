@@ -1,0 +1,30 @@
+[
+  {
+    "site_name": "Hotfrog - Get found online",
+    "url": "https://www.hotfrog.com",
+    "niche": "directories",
+    "type": "General",
+    "description": "directories site with dofollow links - www.hotfrog.com"
+  },
+  {
+    "site_name": "Web Hosting Talk - The largest, most influential web hosting community on the Internet",
+    "url": "https://www.webhostingtalk.com",
+    "niche": "forums",
+    "type": "General",
+    "description": "forums site with dofollow links - www.webhostingtalk.com"
+  },
+  {
+    "site_name": "Newest Questions - Stack Overflow",
+    "url": "https://stackoverflow.com",
+    "niche": "qa_sites",
+    "type": "General",
+    "description": "qa_sites site with dofollow links - stackoverflow.com"
+  },
+  {
+    "site_name": "wikiHow: How-to instructions you can trust.",
+    "url": "https://www.wikihow.com",
+    "niche": "qa_sites",
+    "type": "General",
+    "description": "qa_sites site with dofollow links - www.wikihow.com"
+  }
+]

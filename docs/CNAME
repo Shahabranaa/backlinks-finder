@@ -1,0 +1,9 @@
+# You can set your custom domain here if you have one
+# Example: backlink-finder.yourdomain.com
+#
+# To use a custom domain:
+# 1. Uncomment the line below and replace with your domain
+# 2. Set up DNS records for your domain
+# 3. Configure GitHub Pages to use your custom domain
+#
+# backlink-finder.example.com 

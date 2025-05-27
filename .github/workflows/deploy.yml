@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Set this to your default branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install beautifulsoup4 requests python-dotenv
+
+      - name: Generate mock metrics
+        run: python mock_metrics.py
+
+      - name: Create docs directory
+        run: mkdir -p docs
+
+      - name: Copy files to docs
+        run: |
+          cp index.html docs/
+          cp sources_with_real_metrics.json docs/
+          cp -f count.html docs/ || echo "count.html not found, skipping"
+          cp -f CNAME docs/ || echo "CNAME not found, skipping"
+          touch docs/.nojekyll
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: docs
+          branch: gh-pages 

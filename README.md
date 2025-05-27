@@ -1,73 +1,114 @@
-# Welcome to your Lovable project
+# Backlink Opportunity Finder
 
-## Project info
+A tool to help you find legitimate websites where you can create profiles and obtain valuable backlinks.
 
-**URL**: https://lovable.dev/projects/92600979-7992-4d59-8c3f-0640e0240e08
+## Features
 
-## How can I edit this code?
+- Web interface showing 1000+ websites organized by category
+- Domain Authority (DA), Page Authority (PA), and Spam Score metrics for each website
+- Filter by category, search by domain name, and sort by metrics
+- Simple and clean UI built with Tailwind CSS
 
-There are several ways of editing your application.
+## Getting Started
 
-**Use Lovable**
+### Option 1: Using the Online Version (GitHub Pages)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/92600979-7992-4d59-8c3f-0640e0240e08) and start prompting.
+The easiest way to use this tool is to access the online version hosted on GitHub Pages:
+- Create your own copy by forking this repository
+- Run the `setup_github_repo.sh` script to set up your own GitHub Pages site
+- Access your site at `https://yourusername.github.io/your-repo-name/`
 
-Changes made via Lovable will be committed automatically to this repo.
+### Option 2: Running Locally
 
-**Use your preferred IDE**
+1. Make sure you have Python 3.x installed
+2. Clone this repository
+3. Start the HTTP server:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+python3 -m http.server 8000
 ```
 
-**Edit a file directly in GitHub**
+4. Open your browser and go to http://localhost:8000
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Using Domain Metrics
 
-**Use GitHub Codespaces**
+By default, the application uses simulated metrics. You have a few options for metrics:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+#### Option 1: Use Mock Metrics (Recommended)
 
-## What technologies are used for this project?
+This generates realistic metrics without requiring any API keys or external services:
 
-This project is built with:
+```bash
+python3 mock_metrics.py
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+This will create metrics based on domain characteristics that are deterministic and realistic. Domains like Google.com will always get high metrics, while low quality or spammy domains will get lower scores.
 
-## How can I deploy this project?
+#### Option 2: Try Free APIs (Less Reliable)
 
-Simply open [Lovable](https://lovable.dev/projects/92600979-7992-4d59-8c3f-0640e0240e08) and click on Share -> Publish.
+If you want to attempt to get real metrics from free APIs:
 
-## Can I connect a custom domain to my Lovable project?
+1. Install the required Python packages:
 
-Yes, you can!
+```bash
+pip3 install python-dotenv requests beautifulsoup4
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+2. Run the free metrics script:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```bash
+python3 free_metrics.py
+```
+
+This will attempt to get metrics from various free sources, and fall back to generated metrics if none of the APIs work.
+
+#### Option 3: Use Premium APIs (Paid)
+
+For more reliable metrics, you can use premium APIs:
+
+1. Open the `.env` file in the root directory and add your API keys. You can sign up for free trials at:
+   - [DataForSEO](https://dataforseo.com/) - Most reliable option with a free trial
+   - [SEODataAPI](https://www.seodataapi.com/) - Alternative option with free tier
+   - [DomCop](https://www.domcop.com/) - Another alternative with free trial
+
+2. Run the metrics fetcher script:
+
+```bash
+python3 real_metrics.py
+```
+
+## Hosting on GitHub Pages
+
+To host this tool on GitHub Pages so it's accessible online:
+
+1. Run the setup script:
+
+```bash
+./setup_github_repo.sh
+```
+
+2. Follow the instructions provided by the script to:
+   - Create a GitHub repository
+   - Push your code
+   - Set up GitHub Pages
+
+3. Once deployed, your site will be available at `https://yourusername.github.io/your-repo-name/`
+
+## Understanding Domain Metrics
+
+- **Domain Authority (DA)**: A score from 1-100 predicting how well a website will rank on search engines. Higher is better.
+- **Page Authority (PA)**: Similar to DA, but at the page level rather than domain level. Higher is better.
+- **Spam Score**: A score from 0-14 indicating how likely a site is to be penalized by search engines. Lower is better.
+
+## Ethical Use
+
+This tool is designed to help you find legitimate backlink opportunities, not to automate backlink creation or engage in spammy practices. Always:
+
+1. Create high-quality profiles with relevant information
+2. Follow each website's terms of service
+3. Add value to each platform you join
+4. Create backlinks naturally and in moderation
+
+## License
+
+MIT License
