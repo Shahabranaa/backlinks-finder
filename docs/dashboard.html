@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backlink Tracker - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex flex-col">
+        <!-- Navigation -->
+        <nav class="bg-indigo-600 p-4 text-white">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-8">
+                <div class="text-xl font-bold">Backlink Tracker</div>
+                    <div class="flex items-center space-x-4">
+                        <select id="headerTargetSite" class="bg-indigo-500 text-white border border-indigo-400 rounded px-3 py-1">
+                            <option value="">Select Project</option>
+                        </select>
+                        <a href="#" id="manageProjectsBtn" class="text-white hover:text-indigo-200">
+                            <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                        </a>
+                    </div>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="dashboard.html" class="text-white hover:text-indigo-200 border-b-2 border-white">Dashboard</a>
+                        <a href="sources.html" class="text-white hover:text-indigo-200">Sources</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userInfo" class="hidden md:inline">Welcome, <span id="username">User</span></span>
+                    <button id="logoutBtn" class="px-3 py-1 bg-indigo-500 rounded hover:bg-indigo-400">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container mx-auto p-4 flex-grow">
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h1 class="text-2xl font-bold">Dashboard</h1>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <button id="lastWeekBtn" class="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded">Last 7 Days</button>
+                            <button id="lastMonthBtn" class="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded">Last 30 Days</button>
+                            <button id="allTimeBtn" class="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded">All Time</button>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="dateRange" class="border rounded px-3 py-1 text-sm w-64" placeholder="Select Date Range">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-white p-4 rounded shadow">
+                        <h3 class="font-semibold text-gray-500">Total Backlinks</h3>
+                        <p id="totalBacklinks" class="text-3xl font-bold">0</p>
+                        <p id="totalBacklinksChange" class="text-sm text-gray-500 mt-1"></p>
+                    </div>
+                    <div class="bg-white p-4 rounded shadow">
+                        <h3 class="font-semibold text-gray-500">Created Successfully</h3>
+                        <p id="createdBacklinks" class="text-3xl font-bold text-green-600">0</p>
+                        <p id="createdBacklinksChange" class="text-sm text-gray-500 mt-1"></p>
+                    </div>
+                    <div class="bg-white p-4 rounded shadow">
+                        <h3 class="font-semibold text-gray-500">Pending/Failed</h3>
+                        <p id="pendingBacklinks" class="text-3xl font-bold text-yellow-600">0</p>
+                        <p id="pendingBacklinksChange" class="text-sm text-gray-500 mt-1"></p>
+                    </div>
+                </div>
+                
+                <!-- Chart -->
+                <div class="bg-white p-4 rounded shadow mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold">Backlinks Status (Last 7 Days)</h3>
+                        <div class="text-sm text-gray-500">
+                            <span class="inline-block w-3 h-3 rounded-full bg-green-500 mr-1"></span> Approved
+                            <span class="inline-block w-3 h-3 rounded-full bg-yellow-500 mx-1"></span> Pending
+                            <span class="inline-block w-3 h-3 rounded-full bg-red-500 mx-1"></span> Disapproved
+                        </div>
+                    </div>
+                    <canvas id="backlinkChart" height="100"></canvas>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="mb-4 border-b border-gray-200">
+                <ul class="flex flex-wrap -mb-px">
+                    <li class="mr-2">
+                        <button id="tabManage" class="inline-block p-4 rounded-t-lg border-b-2 border-indigo-600 active text-indigo-600">Manage Backlinks</button>
+                    </li>
+                    <li class="mr-2">
+                        <button id="tabAdd" class="inline-block p-4 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300">Add Backlink</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Manage Backlinks Tab -->
+            <div id="manageContent" class="bg-white p-4 rounded shadow">
+                <div class="mb-4 flex flex-wrap items-center">
+                    <div class="w-full md:w-auto mb-2 md:mb-0 md:mr-4">
+                        <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select id="statusFilter" class="border rounded p-2 w-full md:w-auto">
+                            <option value="">All Statuses</option>
+                            <option value="approved">Approved</option>
+                            <option value="pending">Pending</option>
+                            <option value="disapproved">Disapproved</option>
+                        </select>
+                    </div>
+                    <div class="w-full md:w-auto mb-2 md:mb-0 md:mr-4">
+                        <label for="searchBacklinks" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                        <input type="text" id="searchBacklinks" class="border rounded p-2 w-full md:w-auto" placeholder="Search domains...">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target Site</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Backlink Domain</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="backlinksTable" class="bg-white divide-y divide-gray-200">
+                            <!-- Table rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="noBacklinksMessage" class="py-4 text-center text-gray-500">No backlinks found.</div>
+            </div>
+
+            <!-- Add Backlink Tab -->
+            <div id="addContent" class="bg-white p-4 rounded shadow hidden">
+                <form id="addBacklinkForm" class="space-y-4" onsubmit="return false;">
+                    <div>
+                        <label for="backlinkSource" class="block text-sm font-medium text-gray-700 mb-1">Backlink Source</label>
+                        <div class="space-y-2">
+                            <input type="text" id="sourceSearch" class="border rounded p-2 w-full" placeholder="Search backlink sources...">
+                            <select id="backlinkSource" name="backlinkSource" required class="border rounded p-2 w-full" size="6" style="min-height: 200px;">
+                            <option value="">Select a backlink source</option>
+                        </select>
+                        </div>
+                        <div class="mt-1 text-sm text-gray-500 flex items-center justify-between">
+                            <span>Can't find what you're looking for?</span>
+                            <a href="sources.html" class="text-indigo-600 hover:text-indigo-900 ml-1">Manage backlink sources</a>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="backlinkUrl" class="block text-sm font-medium text-gray-700 mb-1">Backlink URL</label>
+                        <input type="url" id="backlinkUrl" name="backlinkUrl" required class="border rounded p-2 w-full" placeholder="https://example.com/your-backlink-page">
+                        <p class="mt-1 text-sm text-gray-500">The specific page URL where the backlink is placed</p>
+                    </div>
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select id="status" name="status" required class="border rounded p-2 w-full">
+                            <option value="approved">Approved</option>
+                            <option value="pending" selected>Pending</option>
+                            <option value="disapproved">Disapproved</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <textarea id="notes" name="notes" rows="3" class="border rounded p-2 w-full" placeholder="Add any details about this backlink..."></textarea>
+                    </div>
+                    <div>
+                        <button type="button" onclick="handleAddBacklink(event)" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">Add Backlink</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Backlink Modal -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h3 class="text-lg font-bold mb-4">Edit Backlink</h3>
+            <form id="editBacklinkForm" class="space-y-4">
+                <input type="hidden" id="editId">
+                <div>
+                    <label for="editStatus" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select id="editStatus" name="editStatus" required class="border rounded p-2 w-full">
+                        <option value="approved">Approved</option>
+                        <option value="pending">Pending</option>
+                        <option value="disapproved">Disapproved</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="editUrl" class="block text-sm font-medium text-gray-700 mb-1">Backlink URL</label>
+                    <input type="url" id="editUrl" name="editUrl" class="border rounded p-2 w-full">
+                </div>
+                <div>
+                    <label for="editNotes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <textarea id="editNotes" name="editNotes" rows="3" class="border rounded p-2 w-full"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" id="cancelEdit" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-200">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Management Modal -->
+    <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h3 class="text-lg font-bold mb-4">Manage Projects</h3>
+            <div class="mb-4">
+                <form id="addProjectForm" class="space-y-4">
+                    <div>
+                        <label for="projectName" class="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+                        <input type="text" id="projectName" class="border rounded p-2 w-full" placeholder="My Project" required>
+                    </div>
+                    <div>
+                        <label for="projectDomain" class="block text-sm font-medium text-gray-700 mb-1">Domain</label>
+                        <input type="text" id="projectDomain" class="border rounded p-2 w-full" placeholder="example.com" required>
+                    </div>
+                    <button type="submit" class="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">Add Project</button>
+                </form>
+            </div>
+            <div class="mt-6">
+                <h4 class="font-medium mb-2">Existing Projects</h4>
+                <div id="projectsList" class="space-y-2">
+                    <!-- Projects will be listed here -->
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button id="closeProjectModal" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-200">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="backlink_tracker.js"></script>
+    <script>
+        // Global variables
+        let backlinks = [];
+        let backlinkOpportunities = [];
+        let backlinkSources = [];
+        
+        // Date range variables - Initialize normalized
+        let startDate = new Date();
+        startDate.setHours(0, 0, 0, 0);
+        startDate.setDate(startDate.getDate() - 6); // Default to last 7 days, start of day
+        
+        let endDate = new Date();
+        endDate.setHours(23, 59, 59, 999); // Default to today, end of day
+        
+        // Initialize chart
+        function initChart() {
+            try {
+                const ctx = document.getElementById('backlinkChart').getContext('2d');
+                window.backlinkChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['', '', '', '', '', '', ''],
+                        datasets: [
+                            {
+                                label: 'Approved',
+                                data: [0, 0, 0, 0, 0, 0, 0],
+                                backgroundColor: 'rgba(34, 197, 94, 0.6)', // green
+                                borderColor: 'rgba(34, 197, 94, 1)',
+                                borderWidth: 1,
+                                stack: 'stack0'
+                            },
+                            {
+                                label: 'Pending',
+                                data: [0, 0, 0, 0, 0, 0, 0],
+                                backgroundColor: 'rgba(234, 179, 8, 0.6)', // yellow
+                                borderColor: 'rgba(234, 179, 8, 1)',
+                                borderWidth: 1,
+                                stack: 'stack0'
+                            },
+                            {
+                                label: 'Disapproved',
+                                data: [0, 0, 0, 0, 0, 0, 0],
+                                backgroundColor: 'rgba(239, 68, 68, 0.6)', // red
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                borderWidth: 1,
+                                stack: 'stack0'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        return 'Date: ' + context[0].label;
+                                    },
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.raw + ' backlinks';
+                                    },
+                                    footer: function(context) {
+                                        let total = 0;
+                                        context.forEach(item => {
+                                            total += item.raw;
+                                        });
+                                        return 'Total: ' + total + ' backlinks';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: true,
+                                grid: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0,
+                                    stepSize: 1
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Number of Backlinks'
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('Chart initialized:', window.backlinkChart);
+            } catch (error) {
+                console.error('Error initializing chart:', error);
+            }
+        }
+
+        // Load and display backlinks
+        async function loadBacklinks() {
+            console.log('Loading backlinks...');
+            try {
+                const trackedBacklinks = JSON.parse(localStorage.getItem('trackedBacklinks')) || [];
+                console.log('Loaded backlinks from storage:', trackedBacklinks);
+                
+                // Update global backlinks array
+                backlinks = trackedBacklinks;
+                
+                // Render table first
+                renderBacklinksTable();
+                
+                // Then update stats and chart
+                updateStats();
+                
+                return backlinks;
+            } catch (error) {
+                console.error('Error loading backlinks:', error);
+                return [];
+            }
+        }
+
+        // Update dashboard stats
+        function updateStats() {
+            try {
+                const filteredBacklinks = getFilteredBacklinks();
+                
+                const totalElement = document.getElementById('totalBacklinks');
+                const createdElement = document.getElementById('createdBacklinks');
+                const pendingElement = document.getElementById('pendingBacklinks');
+                
+                const total = filteredBacklinks.length;
+                const approved = filteredBacklinks.filter(b => b.status === 'approved').length;
+                const pending = filteredBacklinks.filter(b => b.status === 'pending' || b.status === 'disapproved').length;
+                
+                totalElement.textContent = total;
+                createdElement.textContent = approved;
+                pendingElement.textContent = pending;
+                
+                // Calculate and display changes
+                const previousStartDate = new Date(startDate);
+                previousStartDate.setDate(previousStartDate.getDate() - (endDate - startDate) / (1000 * 60 * 60 * 24));
+                
+                const previousBacklinks = backlinks.filter(backlink => {
+                    const date = new Date(backlink.createdAt);
+                    return date >= previousStartDate && date < startDate;
+                });
+
+                const previousTotal = previousBacklinks.length;
+                const previousApproved = previousBacklinks.filter(b => b.status === 'approved').length;
+                const previousPending = previousBacklinks.filter(b => b.status === 'pending' || b.status === 'disapproved').length;
+
+                const totalChange = total - previousTotal;
+                const approvedChange = approved - previousApproved;
+                const pendingChange = pending - previousPending;
+
+                document.getElementById('totalBacklinksChange').textContent = formatChange(totalChange);
+                document.getElementById('createdBacklinksChange').textContent = formatChange(approvedChange);
+                document.getElementById('pendingBacklinksChange').textContent = formatChange(pendingChange);
+                
+                // Update chart
+                updateChart(filteredBacklinks);
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+
+        // Update chart with latest data
+        function updateChart(filteredBacklinks) {
+            try {
+                if (!window.backlinkChart) {
+                    console.warn('Chart not initialized, initializing now...');
+                    initChart();
+                    if (!window.backlinkChart) {
+                        console.error('Chart failed to initialize. Cannot update.');
+                        return;
+                    }
+                }
+
+                const chartLabels = [];
+                const approvedData = [];
+                const pendingData = [];
+                const disapprovedData = [];
+
+                // Start with midnight of start date
+                let currentDateIter = new Date(startDate);
+                currentDateIter.setHours(0, 0, 0, 0);
+
+                // Create end date for comparison (end of the day)
+                const endDateForComparison = new Date(endDate);
+                endDateForComparison.setHours(23, 59, 59, 999);
+
+                // Debug logging
+                console.log('Processing date range:', {
+                    start: currentDateIter.toISOString(),
+                    end: endDateForComparison.toISOString(),
+                    filteredBacklinksCount: filteredBacklinks.length
+                });
+
+                // Helper function to check if a date falls within a day
+                function isDateInDay(date, dayStart) {
+                    const dayEnd = new Date(dayStart);
+                    dayEnd.setHours(23, 59, 59, 999);
+                    return date >= dayStart && date <= dayEnd;
+                }
+
+                // Helper function to format date for display (adding one day)
+                function formatDateForDisplay(date) {
+                    const displayDate = new Date(date);
+                    displayDate.setDate(displayDate.getDate() + 1);
+                    return displayDate.toISOString().split('T')[0].substr(5); // MM-DD format
+                }
+
+                // Iterate through dates
+                while (currentDateIter <= endDateForComparison) {
+                    const currentDate = new Date(currentDateIter);
+                    
+                    // Format date for display (adding one day)
+                    chartLabels.push(formatDateForDisplay(currentDate));
+
+                    // Find backlinks for this specific date
+                    const dayBacklinks = filteredBacklinks.filter(backlink => {
+                        const backlinksDate = new Date(backlink.createdAt);
+                        return isDateInDay(backlinksDate, currentDate);
+                    });
+
+                    // Count backlinks by status
+                    const approved = dayBacklinks.filter(b => b.status === 'approved').length;
+                    const pending = dayBacklinks.filter(b => b.status === 'pending').length;
+                    const disapproved = dayBacklinks.filter(b => b.status === 'disapproved').length;
+
+                    // Debug logging for each day
+                    console.log('Date data:', {
+                        originalDate: currentDate.toISOString().split('T')[0],
+                        displayDate: formatDateForDisplay(currentDate),
+                        total: dayBacklinks.length,
+                        approved,
+                        pending,
+                        disapproved,
+                        backlinks: dayBacklinks.map(b => ({
+                            createdAt: b.createdAt,
+                            status: b.status
+                        }))
+                    });
+
+                    // Add data points
+                    approvedData.push(approved);
+                    pendingData.push(pending);
+                    disapprovedData.push(disapproved);
+
+                    // Move to next day
+                    currentDateIter.setDate(currentDateIter.getDate() + 1);
+                }
+
+                // Debug logging for final data
+                console.log('Final chart data:', {
+                    labels: chartLabels,
+                    dataPoints: chartLabels.map((label, i) => ({
+                        date: label,
+                        approved: approvedData[i],
+                        pending: pendingData[i],
+                        disapproved: disapprovedData[i]
+                    }))
+                });
+
+                // Update chart configuration
+                const chartConfig = {
+                    labels: chartLabels,
+                    datasets: [
+                        {
+                            label: 'Approved',
+                            data: approvedData,
+                            backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                            borderColor: 'rgba(34, 197, 94, 1)',
+                            borderWidth: 1,
+                            stack: 'stack0'
+                        },
+                        {
+                            label: 'Pending',
+                            data: pendingData,
+                            backgroundColor: 'rgba(234, 179, 8, 0.6)',
+                            borderColor: 'rgba(234, 179, 8, 1)',
+                            borderWidth: 1,
+                            stack: 'stack0'
+                        },
+                        {
+                            label: 'Disapproved',
+                            data: disapprovedData,
+                            backgroundColor: 'rgba(239, 68, 68, 0.6)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 1,
+                            stack: 'stack0'
+                        }
+                    ]
+                };
+
+                // Format dates for the chart title
+                const displayStartDate = new Date(startDate);
+                displayStartDate.setDate(displayStartDate.getDate() + 1);
+                const displayEndDate = new Date(endDate);
+                displayEndDate.setDate(displayEndDate.getDate() + 1);
+
+                // Update chart
+                if (window.backlinkChart) {
+                    window.backlinkChart.data = chartConfig;
+                    window.backlinkChart.options.scales.x.title.text = `Date Range: ${displayStartDate.toLocaleDateString()} - ${displayEndDate.toLocaleDateString()}`;
+                    window.backlinkChart.update('none');
+                }
+            } catch (error) {
+                console.error('Error updating chart:', error);
+                console.error('Error details:', {
+                    startDate: startDate?.toISOString(),
+                    endDate: endDate?.toISOString(),
+                    backlinksCount: filteredBacklinks?.length
+                });
+            }
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Initializing dashboard...');
+            
+            try {
+                // Initialize chart first
+                initChart();
+                
+                // Check if user is logged in
+                if (!isLoggedIn()) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+            // Set user info
+            const user = getCurrentUser();
+            document.getElementById('username').textContent = user.username;
+            
+            // Handle logout
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                logout();
+                window.location.href = 'login.html';
+            });
+                
+                // Initialize project management
+                initializeProjectManagement();
+            
+            // Tab functionality
+            document.getElementById('tabManage').addEventListener('click', function() {
+                document.getElementById('manageContent').classList.remove('hidden');
+                document.getElementById('addContent').classList.add('hidden');
+                document.getElementById('tabManage').classList.add('border-indigo-600', 'text-indigo-600');
+                document.getElementById('tabAdd').classList.remove('border-indigo-600', 'text-indigo-600');
+            });
+            
+            document.getElementById('tabAdd').addEventListener('click', function() {
+                document.getElementById('manageContent').classList.add('hidden');
+                document.getElementById('addContent').classList.remove('hidden');
+                document.getElementById('tabAdd').classList.add('border-indigo-600', 'text-indigo-600');
+                document.getElementById('tabManage').classList.remove('border-indigo-600', 'text-indigo-600');
+                });
+                
+                // Load backlink sources and opportunities
+                await loadBacklinkSources();
+            
+            // Load existing backlinks
+                await loadBacklinks();
+            
+            // Set up filters
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('searchBacklinks').addEventListener('input', applyFilters);
+
+                // Initialize date picker
+                initializeDatePicker();
+
+                console.log('Dashboard initialized successfully');
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+            }
+        });
+
+        // Initialize project management
+        function initializeProjectManagement() {
+            const manageProjectsBtn = document.getElementById('manageProjectsBtn');
+            const projectModal = document.getElementById('projectModal');
+            const closeProjectModal = document.getElementById('closeProjectModal');
+            const addProjectForm = document.getElementById('addProjectForm');
+            const headerTargetSite = document.getElementById('headerTargetSite');
+
+            // Load existing projects into header select
+            loadProjects();
+
+            // Handle project selection change
+            headerTargetSite.addEventListener('change', function() {
+                const selectedProject = this.value;
+                // Store the selected project in localStorage
+                localStorage.setItem('currentProject', selectedProject);
+                // Reload backlinks for the selected project
+                loadBacklinks();
+            });
+
+            // Show project modal
+            manageProjectsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                projectModal.classList.remove('hidden');
+                renderProjectsList();
+            });
+
+            // Close project modal
+            closeProjectModal.addEventListener('click', function() {
+                projectModal.classList.add('hidden');
+            });
+
+            // Handle adding new project
+            addProjectForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const name = document.getElementById('projectName').value;
+                const domain = document.getElementById('projectDomain').value;
+                
+                addProject(name, domain);
+                
+                // Reset form
+                this.reset();
+                
+                // Refresh projects list
+                renderProjectsList();
+                loadProjects();
+            });
+        }
+
+        // Load projects into header select
+        function loadProjects() {
+            const projects = getProjects();
+            const headerSelect = document.getElementById('headerTargetSite');
+            const currentProject = localStorage.getItem('currentProject') || '';
+            
+            headerSelect.innerHTML = '<option value="">Select Project</option>';
+            
+            projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.domain;
+                option.textContent = `${project.name} (${project.domain})`;
+                option.selected = project.domain === currentProject;
+                headerSelect.appendChild(option);
+            });
+        }
+
+        // Get projects from localStorage
+        function getProjects() {
+            const projects = localStorage.getItem('projects');
+            return projects ? JSON.parse(projects) : [];
+        }
+
+        // Add a new project
+        function addProject(name, domain) {
+            const projects = getProjects();
+            
+            // Check if project already exists
+            if (projects.some(p => p.domain === domain)) {
+                alert('A project with this domain already exists.');
+                return false;
+            }
+            
+            // Add new project
+            projects.push({
+                name,
+                domain,
+                createdAt: new Date().toISOString()
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('projects', JSON.stringify(projects));
+            return true;
+        }
+
+        // Delete a project
+        function deleteProject(domain) {
+            const projects = getProjects();
+            const updatedProjects = projects.filter(p => p.domain !== domain);
+            localStorage.setItem('projects', JSON.stringify(updatedProjects));
+            
+            // If the deleted project was selected, clear the selection
+            if (localStorage.getItem('currentProject') === domain) {
+                localStorage.removeItem('currentProject');
+            }
+            
+            // Refresh projects list and header select
+            renderProjectsList();
+            loadProjects();
+        }
+
+        // Render projects list in modal
+        function renderProjectsList() {
+            const projectsList = document.getElementById('projectsList');
+            const projects = getProjects();
+            
+            projectsList.innerHTML = '';
+            
+            if (projects.length === 0) {
+                projectsList.innerHTML = '<p class="text-gray-500">No projects added yet.</p>';
+                return;
+            }
+            
+            projects.forEach(project => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center p-2 bg-gray-50 rounded';
+                div.innerHTML = `
+                    <div>
+                        <span class="font-medium">${project.name}</span>
+                        <span class="text-gray-500 text-sm">(${project.domain})</span>
+                    </div>
+                    <button class="text-red-600 hover:text-red-900 delete-project" data-domain="${project.domain}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                `;
+                projectsList.appendChild(div);
+            });
+            
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-project').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const domain = this.getAttribute('data-domain');
+                    if (confirm('Are you sure you want to delete this project? This will also delete all associated backlinks.')) {
+                        deleteProject(domain);
+                    }
+                });
+            });
+        }
+
+        // Handle adding a new backlink
+        async function handleAddBacklink(e) {
+            e.preventDefault();
+            console.log('Adding backlink...');
+            
+            const currentProject = localStorage.getItem('currentProject');
+            if (!currentProject) {
+                alert('Please select a project first.');
+                return;
+            }
+            
+            const backlinkDomain = document.getElementById('backlinkSource').value;
+            const backlinkUrl = document.getElementById('backlinkUrl').value;
+            const status = document.getElementById('status').value;
+            const notes = document.getElementById('notes').value;
+
+            console.log('Form data:', { currentProject, backlinkDomain, backlinkUrl, status, notes });
+            
+            if (!backlinkDomain || !backlinkUrl || !status) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            try {
+                // Get the project name
+                const projects = getProjects();
+                const project = projects.find(p => p.domain === currentProject);
+                
+                // Get metrics for the selected backlink source
+                const sourceData = getSourceData(backlinkDomain);
+                console.log('Source data:', sourceData);
+                
+                // Create the backlink object
+                const backlink = {
+                    id: Date.now().toString(),
+                    targetSite: project.name,
+                    targetDomain: currentProject,
+                    backlinkDomain,
+                    backlinkUrl,
+                    status,
+                    notes,
+                    createdAt: new Date().toISOString(),
+                    createdBy: getCurrentUser().username,
+                    metrics: sourceData ? sourceData.metrics : null
+                };
+                
+                console.log('New backlink:', backlink);
+                
+                // Get existing backlinks
+                const existingBacklinks = JSON.parse(localStorage.getItem('trackedBacklinks')) || [];
+                console.log('Current backlinks:', existingBacklinks);
+                
+                // Add new backlink
+                existingBacklinks.push(backlink);
+                
+                // Save to localStorage
+                localStorage.setItem('trackedBacklinks', JSON.stringify(existingBacklinks));
+                
+                // Update the backlinks array
+                backlinks = existingBacklinks;
+                console.log('Updated backlinks:', backlinks);
+                
+                // Reset form
+                document.getElementById('addBacklinkForm').reset();
+                
+                // Switch to manage tab and refresh data
+                document.getElementById('tabManage').click();
+                
+                // Render table first
+                renderBacklinksTable();
+                
+                // Then update stats and chart
+                updateStats();
+                
+                // Show success message
+                alert('Backlink added successfully!');
+            } catch (error) {
+                console.error('Error adding backlink:', error);
+                alert('Error adding backlink. Please check the console for details.');
+            }
+        }
+
+        // Get filtered backlinks based on current filter settings
+        function getFilteredBacklinks() {
+            const currentProject = localStorage.getItem('currentProject');
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchBacklinks').value.toLowerCase();
+            
+            return backlinks.filter(backlink => {
+                const backlinksDate = new Date(backlink.createdAt);
+                const matchesProject = !currentProject || backlink.targetDomain === currentProject;
+                const matchesStatus = !status || backlink.status === status;
+                const matchesSearch = !search || 
+                                    backlink.backlinkDomain.toLowerCase().includes(search) || 
+                                    backlink.notes?.toLowerCase().includes(search);
+                
+                // Ensure start and end dates are properly set for comparison
+                const startOfStartDate = new Date(startDate);
+                startOfStartDate.setHours(0, 0, 0, 0);
+                
+                const endOfEndDate = new Date(endDate);
+                endOfEndDate.setHours(23, 59, 59, 999);
+                
+                const matchesDateRange = backlinksDate >= startOfStartDate && backlinksDate <= endOfEndDate;
+                
+                return matchesProject && matchesStatus && matchesSearch && matchesDateRange;
+            });
+        }
+
+        // Load backlink sources and opportunities
+        async function loadBacklinkSources() {
+            try {
+                const response = await fetch('sources_with_real_metrics.json');
+                const data = await response.json();
+                
+                // Store the full data for filtering
+                window.fullSourceData = data;
+                
+                // Initial render of the select
+                renderBacklinkSourceSelect(data);
+                
+                // Set up search functionality
+                const sourceSearch = document.getElementById('sourceSearch');
+                sourceSearch.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const filteredData = filterSourceData(window.fullSourceData, searchTerm);
+                    renderBacklinkSourceSelect(filteredData);
+                });
+                
+            } catch (error) {
+                console.error('Error loading backlink sources:', error);
+            }
+        }
+
+        // Filter source data based on search term
+        function filterSourceData(data, searchTerm) {
+            if (!searchTerm) return data;
+            
+            const filteredData = {};
+            
+            Object.entries(data).forEach(([category, opportunities]) => {
+                const filteredOpportunities = opportunities.filter(opportunity => {
+                    return opportunity.domain.toLowerCase().includes(searchTerm) ||
+                           `DA: ${opportunity.metrics.da}`.includes(searchTerm) ||
+                           `PA: ${opportunity.metrics.pa}`.includes(searchTerm) ||
+                           category.toLowerCase().includes(searchTerm);
+                });
+                
+                if (filteredOpportunities.length > 0) {
+                    filteredData[category] = filteredOpportunities;
+                }
+            });
+            
+            return filteredData;
+        }
+
+        // Render the backlink source select with the provided data
+        function renderBacklinkSourceSelect(data) {
+                const backlinkSourceSelect = document.getElementById('backlinkSource');
+            const currentValue = backlinkSourceSelect.value;
+            
+                backlinkSourceSelect.innerHTML = '<option value="">Select a backlink source</option>';
+                
+                // Process each category
+            Object.entries(data).forEach(([category, opportunities]) => {
+                    // Create an optgroup for this category
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = category.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    
+                    opportunities.forEach(opportunity => {
+                        const option = document.createElement('option');
+                        option.value = opportunity.domain;
+                        option.textContent = `${opportunity.domain} (DA: ${opportunity.metrics.da}, PA: ${opportunity.metrics.pa})`;
+                        optgroup.appendChild(option);
+                    });
+                    
+                    backlinkSourceSelect.appendChild(optgroup);
+                });
+
+            // Restore the selected value if it still exists in the filtered results
+            if (currentValue) {
+                const options = backlinkSourceSelect.getElementsByTagName('option');
+                for (let option of options) {
+                    if (option.value === currentValue) {
+                        option.selected = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Render backlinks table
+        function renderBacklinksTable() {
+            console.log('Rendering backlinks table...');
+            const tableBody = document.getElementById('backlinksTable');
+            const noBacklinksMessage = document.getElementById('noBacklinksMessage');
+            
+            // Clear the table
+            tableBody.innerHTML = '';
+            
+            // Apply any active filters
+            const filteredBacklinks = getFilteredBacklinks();
+            console.log('Filtered backlinks:', filteredBacklinks);
+            
+            if (filteredBacklinks.length === 0) {
+                tableBody.classList.add('hidden');
+                noBacklinksMessage.classList.remove('hidden');
+                return;
+            }
+            
+            tableBody.classList.remove('hidden');
+            noBacklinksMessage.classList.add('hidden');
+            
+            // Sort by most recent first
+            filteredBacklinks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            // Add rows to the table
+            filteredBacklinks.forEach(backlink => {
+                const row = document.createElement('tr');
+                
+                // Format date
+                const date = new Date(backlink.createdAt);
+                const formattedDate = date.toLocaleDateString();
+                
+                // Create status badge class based on status
+                let statusClass = 'bg-gray-100 text-gray-800';
+                if (backlink.status === 'approved') {
+                    statusClass = 'bg-green-100 text-green-800';
+                } else if (backlink.status === 'pending') {
+                    statusClass = 'bg-yellow-100 text-yellow-800';
+                } else if (backlink.status === 'disapproved') {
+                    statusClass = 'bg-red-100 text-red-800';
+                }
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex flex-col">
+                            <span class="font-medium">${backlink.targetSite}</span>
+                            <span class="text-sm text-gray-500">${backlink.targetDomain}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex flex-col">
+                            <span class="font-medium">${backlink.backlinkDomain}</span>
+                            ${backlink.metrics ? `
+                            <span class="text-sm text-gray-500">
+                                DA: ${backlink.metrics.da}, PA: ${backlink.metrics.pa}
+                            </span>
+                            ` : ''}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <a href="${backlink.backlinkUrl}" target="_blank" 
+                           class="text-indigo-600 hover:text-indigo-900 break-all">
+                            ${backlink.backlinkUrl}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                            ${backlink.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900 max-w-xs break-words">
+                            ${backlink.notes || '-'}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${backlink.createdBy}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${formattedDate}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button class="text-indigo-600 hover:text-indigo-900 mr-2 edit-btn" data-id="${backlink.id}">Edit</button>
+                        <button class="text-red-600 hover:text-red-900 delete-btn" data-id="${backlink.id}">Delete</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners for edit and delete buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    openEditModal(id);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    if (confirm('Are you sure you want to delete this backlink?')) {
+                        deleteBacklink(id);
+                        loadBacklinks();
+                    }
+                });
+            });
+        }
+
+        // Apply filters to backlinks
+        function applyFilters() {
+            renderBacklinksTable();
+        }
+
+        // Get source data for a domain
+        function getSourceData(domain) {
+            try {
+                // First try to get from the window.fullSourceData
+                if (window.fullSourceData) {
+                    for (const [category, opportunities] of Object.entries(window.fullSourceData)) {
+                        const source = opportunities.find(o => o.domain === domain);
+                        if (source) {
+                            return {
+                                domain: source.domain,
+                                category,
+                                metrics: {
+                                    da: source.metrics.da,
+                                    pa: source.metrics.pa,
+                                    spam: source.metrics.spam_score
+                            }
+                            };
+                    }
+                }
+        }
+
+                // If not found in window.fullSourceData, try localStorage
+                const data = JSON.parse(localStorage.getItem('sources_with_real_metrics'));
+                if (data) {
+                    for (const [category, opportunities] of Object.entries(data)) {
+                        const source = opportunities.find(o => o.domain === domain);
+                        if (source) {
+                            return {
+                                domain: source.domain,
+                                category,
+                                metrics: {
+                                    da: source.metrics.da,
+                                    pa: source.metrics.pa,
+                                    spam: source.metrics.spam_score
+                                }
+                            };
+            }
+                    }
+                }
+            } catch (error) {
+                console.error('Error getting source data:', error);
+            }
+            return null;
+        }
+
+        // Open edit modal for a backlink
+        function openEditModal(id) {
+            const backlink = backlinks.find(b => b.id === id);
+            if (!backlink) return;
+            
+            document.getElementById('editId').value = backlink.id;
+            document.getElementById('editStatus').value = backlink.status;
+            document.getElementById('editUrl').value = backlink.backlinkUrl || '';
+            document.getElementById('editNotes').value = backlink.notes || '';
+            
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        // Close edit modal
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        // Handle editing a backlink
+        function handleEditBacklink(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('editId').value;
+            const status = document.getElementById('editStatus').value;
+            const backlinkUrl = document.getElementById('editUrl').value;
+            const notes = document.getElementById('editNotes').value;
+            
+            updateBacklink(id, { status, backlinkUrl, notes });
+            
+            closeEditModal();
+            loadBacklinks();
+        }
+
+        // Update sources table based on filters
+        function updateSourcesTable() {
+            const tableBody = document.getElementById('sourcesTable');
+            const noSourcesMessage = document.getElementById('noSourcesMessage');
+            
+            // Get filter values
+            const filters = {
+                category: document.getElementById('sourceCategoryFilter').value,
+                minDA: parseInt(document.getElementById('minDAFilter').value) || 0,
+                maxSpam: parseInt(document.getElementById('maxSpamFilter').value) || 14,
+                search: document.getElementById('searchSources').value
+            };
+            
+            // Get filtered sources
+            const filteredSources = getFilteredSources(filters);
+            
+            // Clear the table
+            tableBody.innerHTML = '';
+            
+            if (filteredSources.length === 0) {
+                tableBody.classList.add('hidden');
+                noSourcesMessage.classList.remove('hidden');
+                return;
+            }
+            
+            tableBody.classList.remove('hidden');
+            noSourcesMessage.classList.add('hidden');
+            
+            // Sort by DA (highest first)
+            filteredSources.sort((a, b) => b.metrics.da - a.metrics.da);
+            
+            // Add rows to the table
+            filteredSources.forEach(source => {
+                const row = document.createElement('tr');
+                
+                // Create spam score class based on value
+                let spamClass = 'text-green-600';
+                if (source.metrics.spam > 10) {
+                    spamClass = 'text-red-600';
+                } else if (source.metrics.spam > 5) {
+                    spamClass = 'text-yellow-600';
+                }
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <a href="https://${source.domain}" target="_blank" class="text-indigo-600 hover:text-indigo-900">
+                            ${source.domain}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">${source.category}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${source.metrics.da}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${source.metrics.pa}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="${spamClass}">${source.metrics.spam}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button class="text-red-600 hover:text-red-900 delete-source" data-domain="${source.domain}">Delete</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-source').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const domain = this.getAttribute('data-domain');
+                    if (confirm('Are you sure you want to delete this backlink source?')) {
+                        if (deleteBacklinkSource(domain)) {
+                            backlinkSources = backlinkSources.filter(s => s.domain !== domain);
+                            updateSourcesTable();
+                            updateSourceFilters();
+                        }
+                    }
+                });
+            });
+        }
+
+        // Update source filters
+        function updateSourceFilters() {
+            const categoryFilter = document.getElementById('sourceCategoryFilter');
+            const categories = [...new Set(backlinkSources.map(s => s.category))].sort();
+            
+            // Clear existing options (except "All Categories")
+            categoryFilter.innerHTML = '<option value="">All Categories</option>';
+            
+            // Add category options
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        // Initialize date picker
+        function initializeDatePicker() {
+            const dateRangePicker = flatpickr("#dateRange", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                maxDate: "today",
+                defaultDate: [startDate, endDate],
+                onChange: function(selectedDates) {
+                    if (selectedDates.length === 2) {
+                        // Set start date to beginning of day
+                        startDate = new Date(selectedDates[0]);
+                        startDate.setHours(0, 0, 0, 0);
+
+                        // Set end date to end of day
+                        endDate = new Date(selectedDates[1]);
+                        endDate.setHours(23, 59, 59, 999);
+
+                        console.log('Date range changed:', {
+                            start: startDate.toISOString(),
+                            end: endDate.toISOString()
+                        });
+
+                        updateDashboard();
+                    }
+                }
+            });
+
+            // Quick filter buttons
+            document.getElementById('lastWeekBtn').addEventListener('click', () => {
+                const end = new Date();
+                end.setHours(23, 59, 59, 999);
+                const start = new Date();
+                start.setDate(end.getDate() - 6);
+                start.setHours(0, 0, 0, 0);
+                dateRangePicker.setDate([start, end], true);
+            });
+
+            document.getElementById('lastMonthBtn').addEventListener('click', () => {
+                const end = new Date();
+                end.setHours(23, 59, 59, 999);
+                const start = new Date();
+                start.setDate(end.getDate() - 29);
+                start.setHours(0, 0, 0, 0);
+                dateRangePicker.setDate([start, end], true);
+            });
+
+            document.getElementById('allTimeBtn').addEventListener('click', () => {
+                const end = new Date();
+                end.setHours(23, 59, 59, 999);
+                const start = new Date(0);
+                start.setHours(0, 0, 0, 0);
+                dateRangePicker.setDate([start, end], true);
+            });
+        }
+
+        // Update dashboard with date range
+        function updateDashboard() {
+            const filteredBacklinks = getFilteredBacklinks();
+            renderBacklinksTable();
+            updateStats();
+        }
+
+        // Helper function to format change numbers
+        function formatChange(change) {
+            if (change === 0) return 'No change';
+            const prefix = change > 0 ? '+' : '';
+            return `${prefix}${change} from previous period`;
+        }
+    </script>
+</body>
+</html> 
